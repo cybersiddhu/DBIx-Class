@@ -149,7 +149,8 @@ my $rs = $schema->resultset ('CD')->search (
 );
 
 use Text::Table;
-my ($cols) = ( ${$rs->as_query}->[0] =~ /SELECT (.+) FROM/);
+my $query = ${$rs->as_query}->[0];
+my ($cols) = ( $query =~ /SELECT (.+) FROM/);
 my $tb = Text::Table->new (map { $_ => \ ' | ' } (split /,\s*/, $cols) );
 
 my $c = $rs->cursor;
@@ -158,7 +159,8 @@ while (my @stuff = $c->next) {
 }
 
 $rs->reset;
-print STDERR Dumper [
+diag Dumper [
+  "\n$query",
   "\n$tb",
   $rs->next
 ];
