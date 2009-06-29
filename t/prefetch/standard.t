@@ -313,4 +313,3 @@ is($art_rs_pr->search_related('cds')->search_related('tracks')->first->title,
   );
 
 is($queries, 0, 'chained search_related after has_many->has_many prefetch ran no queries');
-
