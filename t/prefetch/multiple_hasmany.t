@@ -143,6 +143,7 @@ while (my @stuff = $c->next) {
 }
 
 $rs->reset;
+use Data::Dumper;
 diag Dumper [
   "\n$query",
   "\n$tb",
