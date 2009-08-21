@@ -1034,7 +1034,7 @@ sub _merge_result {
     foreach my $seen (@$rows) {
         my $match = 1;
         foreach my $column ( keys %$columns ) {
-            if ( defined $columns->{$column}
+            if ( defined $columns->{$column} # TODO: XOR!
                 && $seen->[0]->{$column} ne $columns->{$column} )
             {
                 $match = 0;
@@ -1049,14 +1049,15 @@ sub _merge_result {
     if ($found) {
         foreach my $rel ( keys %$rels ) {
             my $old_rows = $found->[1]->{$rel};
-            if ( ref $rels->{$rel}->[0] eq 'HASH' ) {
-                $self->_merge_result( [ $found->[1]->{$rel} ],
-                    [ $rels->{$rel}->[0] ] );
-            }
-            else {
-                $self->_merge_result( $found->[1]->{$rel}, $rels->{$rel}->[0] );
-            }
+            $self->_merge_result(
+                ref $found->[1]->{$rel}->[0] eq 'HASH' ? [ $found->[1]->{$rel} ]
+                : $found->[1]->{$rel},
+                ref $rels->{$rel}->[0] eq 'HASH' ? [ $rels->{$rel}->[0], $rels->{$rel}->[1] ]
+                : $rels->{$rel}->[0]
+            );
+
         }
+
     }
     else {
         push( @$rows, $row );
