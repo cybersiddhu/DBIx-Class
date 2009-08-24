@@ -1020,23 +1020,24 @@ sub _collapse_result {
         && do { @row = $self->cursor->next; $self->{stashed_row} = \@row if @row; }
       );
 
-    #use Data::Dumper; $Data::Dumper::Indent = 1; warn Dumper $rows->[0];
-
     return $rows->[0];
 
 }
 
+#use List::Util qw(first);
+
 sub _merge_result {
     my ( $self, $rows, $row ) = @_;
-
     my ( $columns, $rels ) = @$row;
     my $found = undef;
     foreach my $seen (@$rows) {
         my $match = 1;
         foreach my $column ( keys %$columns ) {
-            if ( defined $columns->{$column} # TODO: XOR!
+            if (   defined $seen->[0]->{$column} ^ defined $columns->{$column}
+                or defined $columns->{$column}
                 && $seen->[0]->{$column} ne $columns->{$column} )
             {
+
                 $match = 0;
                 last;
             }
