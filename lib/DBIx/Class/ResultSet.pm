@@ -966,6 +966,59 @@ sub _construct_object {
   return @new;
 }
 
+# _unflatten_result takes a row hashref which looks like this:
+# $VAR1 = {
+#   'cd.artist.artistid' => '1',
+#   'cd.artist' => '1',
+#   'cd_id' => '1',
+#   'cd.genreid' => undef,
+#   'cd.year' => '1999',
+#   'cd.title' => 'Spoonful of bees',
+#   'cd.single_track' => undef,
+#   'cd.artist.name' => 'Caterwauler McCrae',
+#   'cd.artist.rank' => '13',
+#   'cd.artist.charfield' => undef,
+#   'cd.cdid' => '1'
+# };
+
+# and generates the following structure:
+
+# $VAR1 = [
+#   {
+#     'cd_id' => '1'
+#   },
+#   {
+#     'cd' => [
+#       {
+#         'single_track' => undef,
+#         'cdid' => '1',
+#         'artist' => '1',
+#         'title' => 'Spoonful of bees',
+#         'year' => '1999',
+#         'genreid' => undef
+#       },
+#       {
+#         'artist' => [
+#           {
+#             'artistid' => '1',
+#             'charfield' => undef,
+#             'name' => 'Caterwauler McCrae',
+#             'rank' => '13'
+#           }
+#         ]
+#       }
+#     ]
+#   }
+# ];  
+
+# It returns one row object which consists of an arrayref with two
+# elements. The first contains the plain column data, the second 
+# contains the data of relationships. Those are row arrayrefs, themselves.
+
+# it's a recursive function. It needs to request the relationship_info
+# to decide whether to put the data of a relationship in a hashref
+# (i.e. belongs_to) or an arrayref (i.e. has_many).
+
 sub _unflatten_result {
     my ( $self, $row ) = @_;
 
@@ -992,6 +1045,20 @@ sub _unflatten_result {
 
     return keys %$rels ? [ $columns, $rels ] : [$columns];
 }
+
+# two arguments: $as_proto is an arrayref of column names,
+# $row_ref is an arrayref of the data. If none of the row data
+# is defined we return undef (that's copied from the old
+# _collapse_result). Next we decide whether we need to collapse
+# the resultset (i.e. we prefetch something) or not. $collapse
+# indicates that. The do-while loop will run once if we do not need
+# to collapse the result and will run as long as _merge_result returns
+# a true value. It will return undef if the current added row does not
+# match the previous row. A bit of stashing and cursor magic is
+# required so that the cursor is not mixed up.
+
+# "$rows" is a bit misleading. In the end, there should only be one
+# element in this arrayref. 
 
 sub _collapse_result {
     my ( $self, $as_proto, $row_ref ) = @_;
@@ -1024,7 +1091,14 @@ sub _collapse_result {
 
 }
 
-#use List::Util qw(first);
+# _merge_result accepts an arrayref of rows objects (again, an arrayref of two elements)
+# and a row object which should be merged into the first object.
+# First we try to find out whether $row is already in $rows. If this is the case
+# we try to merge them by iteration through their relationship data. We call
+# _merge_result again on them, so they get merged.
+
+# If we don't find the $row in $rows, we append it to $rows and return undef.
+# _merge_result returns 1 otherwise (i.e. $row has been found in $rows).
 
 sub _merge_result {
     my ( $self, $rows, $row ) = @_;
