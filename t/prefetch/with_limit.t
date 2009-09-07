@@ -8,8 +8,6 @@ use Test::Exception;
 use lib qw(t/lib);
 use DBICTest;
 
-plan tests => 9;
-
 my $schema = DBICTest->init_schema();
 
 
@@ -89,3 +87,5 @@ is($artist->cds->count, 1, "count on search limiting prefetched has_many");
 # try with double limit
 my $artist2 = $use_prefetch->search({'cds.title' => { '!=' => $artist_many_cds->cds->first->title } })->slice (0,0)->next;
 is($artist2->cds->count, 2, "count on search limiting prefetched has_many");
+
+done_testing;

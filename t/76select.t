@@ -9,8 +9,6 @@ use DBIC::SqlMakerTest;
 
 my $schema = DBICTest->init_schema();
 
-plan tests => 23;
-
 my $rs = $schema->resultset('CD')->search({},
     {
         '+select'   => \ 'COUNT(*)',
@@ -180,4 +178,4 @@ is_deeply(
     'columns/select/as fold properly on sub-searches',
 );
 
-
+done_testing;
