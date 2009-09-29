@@ -23,6 +23,8 @@ my $no_prefetch = $schema->resultset('Artist')->search(
 my $use_prefetch = $no_prefetch->search(
   {},
   {
+    select => ['me.artistid', 'me.name'],
+    as => ['artistid', 'name'],
     prefetch => 'cds',
     order_by => { -desc => 'name' },
   }
