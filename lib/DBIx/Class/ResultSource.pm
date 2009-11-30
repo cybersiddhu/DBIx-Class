@@ -1504,9 +1504,14 @@ sub _resolve_prefetch {
 # The structure is constructed taking into account relationship metadata
 # (single vs multi).
 # The resulting arrayref resembles the arguments to ::Row::inflate_result
-# For an example look at t/prefetch/_util.t:
+# For an example look at t/prefetch/_util.t
+#
+# The will collapse flag is for backwards compatibility only - if it is
+# set, all relationship row-parts are returned as hashes, even if some
+# of these relationships are has_many's
+#
 sub _parse_row {
-    my ( $self, $row ) = @_;
+    my ( $self, $row, $will_collapse ) = @_;
 
     my ($me, $pref);
 
@@ -1523,10 +1528,10 @@ sub _parse_row {
         my $rel_info = $self->relationship_info($rel);
 
         $pref->{$rel} =
-          $self->related_source($rel)->_parse_row( $pref->{$rel} );
+          $self->related_source($rel)->_parse_row( $pref->{$rel}, $will_collapse );
 
         $pref->{$rel} = [ $pref->{$rel} ]
-          if ( $rel_info->{attrs}{accessor} eq 'multi' );
+          if ( $will_collapse && $rel_info->{attrs}{accessor} eq 'multi' );
     }
 
     return [ $me||{}, $pref||() ];

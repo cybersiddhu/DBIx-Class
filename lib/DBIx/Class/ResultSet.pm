@@ -1003,7 +1003,7 @@ sub _collapse_result {
     do {
         my $i = 0;
         my $row = { map { $_ => $row[ $i++ ] } @$as_proto };
-        $row = $self->result_source->_parse_row($row);
+        $row = $self->result_source->_parse_row($row, $collapse);
         unless ( scalar @$rows ) {
             push( @$rows, $row );
         }

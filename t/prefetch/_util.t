@@ -21,7 +21,8 @@ my $irow = $schema->source ('Artwork')->_parse_row (
 
     'cd.artist.artistid' => '1',
     'cd.artist.name' => 'Caterwauler McCrae',
-  }, 
+  },
+  'will collapse'
 );
 
 is_deeply (
@@ -57,7 +58,7 @@ is_deeply (
       ]
     }
   ],
-  '_parse_row works as expected',
+  '_parse_row works as expected with expected collapse',
 );
 
 $irow = $schema->source ('Artist')->_parse_row (
@@ -76,30 +77,26 @@ is_deeply (
     },
     {
       'cds' => [
-        [
-          {},
-          {
-            'tracks' => [
-              [
+        {},
+        {
+          'tracks' => [
+            {
+              'cd' => '3',
+              'title' => 'Fowlin'
+            },
+            {
+              'cd_single' => [
                 {
-                  'cd' => '3',
-                  'title' => 'Fowlin'
+                  title => 'Awesome single',
                 },
-                {
-                  'cd_single' => [
-                    {
-                      title => 'Awesome single',
-                    },
-                  ],
-                },
-              ]
-            ]
-          }
-        ]
+              ],
+            },
+          ]
+        }
       ]
     }
   ],
-  '_parse_row works over missing joins',
+  '_parse_row works over missing joins without collapse',
 );
 
 done_testing;
