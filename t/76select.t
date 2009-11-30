@@ -168,12 +168,10 @@ is_deeply(
     {
         artist         => 1,
         track_position => 2,
-        tracks         => [
-            {
-                trackid => 17,
-                title   => 'Apiary',
-            },
-        ],
+        tracks         => {
+          trackid => 17,
+          title   => 'Apiary',
+        },
     },
     'columns/select/as fold properly on sub-searches',
 );
