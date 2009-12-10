@@ -1290,6 +1290,12 @@ sub _query_end {
     }
 }
 
+sub _sth_bind_param {
+  my ($self, $sth, $placeholder_index, $data, $attributes) = @_;
+
+  $sth->bind_param($placeholder_index, $data, $attributes);
+}
+
 sub _dbh_execute {
   my ($self, $dbh, $op, $extra_bind, $ident, $bind_attributes, @args) = @_;
 
@@ -1314,7 +1320,7 @@ sub _dbh_execute {
       my $ref = ref $data;
       $data = $ref && $ref ne 'ARRAY' ? ''.$data : $data; # stringify args (except arrayrefs)
 
-      $sth->bind_param($placeholder_index, $data, $attributes);
+      $self->_sth_bind_param($sth, $placeholder_index, $data, $attributes);
       $placeholder_index++;
     }
   }
@@ -1773,12 +1779,52 @@ sub _select_args {
   if (
     ( $attrs->{rows} && keys %{$attrs->{collapse}} )
        ||
-    ( $attrs->{group_by} && @{$attrs->{group_by}} &&
-      $attrs->{_prefetch_select} && @{$attrs->{_prefetch_select}} )
+    ( $attrs->{group_by}
+        &&
+      @{$attrs->{group_by}}
+        &&
+      $attrs->{_prefetch_select}
+        &&
+      @{$attrs->{_prefetch_select}}
+    )
   ) {
+
     ($ident, $select, $where, $attrs)
       = $self->_adjust_select_args_for_complex_prefetch ($ident, $select, $where, $attrs);
   }
+
+  elsif (
+    ($attrs->{rows} || $attrs->{offset})
+      &&
+    $sql_maker->limit_dialect eq 'RowNumberOver'
+      &&
+    (ref $ident eq 'ARRAY' && @$ident > 1)  # indicates a join
+      &&
+    scalar $sql_maker->_order_by_chunks ($attrs->{order_by})
+  ) {
+    # the RNO limit dialect above mangles the SQL such that the join gets lost
+    # wrap a subquery here
+
+    push @limit, delete @{$attrs}{qw/rows offset/};
+
+    my $subq = $self->_select_args_to_query (
+      $ident,
+      $select,
+      $where,
+      $attrs,
+    );
+
+    $ident = {
+      -alias => $attrs->{alias},
+      -source_handle => $ident->[0]{-source_handle},
+      $attrs->{alias} => $subq,
+    };
+
+    # all part of the subquery now
+    delete @{$attrs}{qw/order_by group_by having/};
+    $where = undef;
+  }
+
   elsif (! $attrs->{software_limit} ) {
     push @limit, $attrs->{rows}, $attrs->{offset};
   }
