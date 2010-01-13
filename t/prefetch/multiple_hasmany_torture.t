@@ -5,23 +5,28 @@ use Test::More;
 use Test::Exception;
 use lib qw(t/lib);
 use DBICTest;
-use IO::File;
 
 my $schema = DBICTest->init_schema();
 
-# $artist_rs->search(
-#     {},
-#     {
-#         prefetch => [
-#             {
-#                 cds => [
-#                     { tracks         => { cd_single => 'tracks } },
-#                     { producer_to_cd => 'producer' }
-#                 ]
-#             },
-#             { artwork_to_artist => 'artwork' } ] );
+my $mo_rs = $schema->resultset('Artist')->search(
+    { 'me.artistid' => 4 },
+    {
+        prefetch     => [
+            {
+                cds => [
+                    { tracks         => { cd_single => 'tracks' } },
+                    { cd_to_producer => 'producer' }
+                ]
+            },
+            { artwork_to_artist => 'artwork' }
+        ],
 
-my $cd = $schema->resultset('Artist')->create(
+        result_class => 'DBIx::Class::ResultClass::HashRefInflator',
+    }
+);
+
+
+$schema->resultset('Artist')->create(
     {
         name => 'mo',
         rank => '1337',
@@ -78,22 +83,6 @@ my $cd = $schema->resultset('Artist')->create(
         ],
         artwork_to_artist =>
           [ { artwork => { cd_id => 1 } }, { artwork => { cd_id => 2 } } ]
-    }
-);
-
-my $mo_rs = $schema->resultset('Artist')->search(
-    { 'me.artistid' => 4 },
-    {
-        result_class => 'DBIx::Class::ResultClass::HashRefInflator',
-        prefetch     => [
-            {
-                cds => [
-                    { tracks         => { cd_single => 'tracks' } },
-                    { cd_to_producer => 'producer' }
-                ]
-            },
-            { artwork_to_artist => 'artwork' }
-        ],
     }
 );
 
