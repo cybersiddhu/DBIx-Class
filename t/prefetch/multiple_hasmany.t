@@ -82,5 +82,4 @@ is( $pr_tags_rs->all, $tags_rs->all,
 'equal amount of objects with and without prefetch over several same level has_many\'s (M -> 1 -> M + M)'
 );
 
-
 done_testing;

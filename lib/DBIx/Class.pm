@@ -267,6 +267,8 @@ jgoulah: John Goulah <jgoulah@cpan.org>
 
 jguenther: Justin Guenther <jguenther@cpan.org>
 
+jhannah: Jay Hannah <jay@jays.net>
+
 jnapiorkowski: John Napiorkowski <jjn1056@yahoo.com>
 
 jon: Jon Schutz <jjschutz@cpan.org>
@@ -319,11 +321,13 @@ rbuels: Robert Buels <rmb32@cornell.edu>
 
 rdj: Ryan D Johnson <ryan@innerfence.com>
 
-ribasushi: Peter Rabbitson <rabbit+dbic@rabbit.us>
+ribasushi: Peter Rabbitson <ribasushi@cpan.org>
 
 rjbs: Ricardo Signes <rjbs@cpan.org>
 
 robkinyon: Rob Kinyon <rkinyon@cpan.org>
+
+Roman: Roman Filippov <romanf@cpan.org>
 
 sc_: Just Another Perl Hacker
 
