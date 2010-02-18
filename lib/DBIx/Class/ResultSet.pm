@@ -2922,7 +2922,6 @@ sub _resolved_attrs {
 
   if ( my $prefetch = delete $attrs->{prefetch} ) {
     $attrs->{collapse} = 1;
-    $prefetch = $self->_merge_attr( {}, $prefetch );
 
     my $prefetch_ordering = [];
 
