@@ -58,7 +58,7 @@ is_deeply (
       ]
     }
   ],
-  '_parse_row works as expected with expected collapse',
+  '_parse_row works as expected with collapse requested',
 );
 
 $irow = $schema->source ('Artist')->_parse_row (
