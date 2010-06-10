@@ -21,7 +21,14 @@ my $weak;
 
 {
   my $s = $weak->{schema} = DBICTest->init_schema;
+  ok ($s->storage->connected, 'we are connected');
   memory_cycle_ok($s, 'No cycles in schema');
+
+  my $storage = $weak->{storage} = $s->storage;
+  memory_cycle_ok($storage, 'No cycles in storage');
+
+  my $dbh = $weak->{dbh} = $s->storage->_get_dbh;
+  memory_cycle_ok($dbh, 'No cycles in DBI handle');
 
   my $rs = $weak->{resultset} = $s->resultset ('Artist');
   memory_cycle_ok($rs, 'No cycles in resultset');
@@ -31,6 +38,7 @@ my $weak;
 
   my $row = $weak->{row} = $rs->first;
   memory_cycle_ok($row, 'No cycles in row');
+
 
   weaken $_ for values %$weak;
   memory_cycle_ok($weak, 'No cycles in weak object collection');
