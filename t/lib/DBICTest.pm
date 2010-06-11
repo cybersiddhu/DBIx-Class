@@ -101,9 +101,21 @@ sub _database {
         # an open database, which fails on Win32)
         if (-e $db_file and my $orig_inode = (stat($db_file))[1] ) {
 
-          my $already_failed;
+          my ($already_failed, $connected);
           my $cb = sub {
             return if $already_failed;
+
+            my $event = shift;
+            if ($event eq 'connect') {
+              $connected = 1;
+              return;
+            }
+            elsif ($event eq 'disconnect') {
+              $connected = 0;
+            }
+            elsif ($event eq 'DESTROY' and ! $connected ) {
+              return;
+            }
 
             my $fail_reason;
             if (! -e $db_file) {
@@ -123,7 +135,6 @@ sub _database {
               my $t = Test::Builder->new;
               local $Test::Builder::Level = $Test::Builder::Level + 1;
 
-              my $event = shift;
               $t->ok (0,
                   "$db_file $fail_reason before $event of DBI handle - a strong indicator that "
                 . 'the SQLite file was tampered with while still being open. This action would '
@@ -134,7 +145,8 @@ sub _database {
             return; # this empty return is a DBI requirement
           };
           $dbh->{Callbacks} = {
-            disconnect => sub { $cb->('explicit disconnect') },
+            connect => sub { $cb->('connect') },
+            disconnect => sub { $cb->('disconnect') },
             DESTROY => sub { $cb->('DESTROY') },
           };
         }
