@@ -1,5 +1,9 @@
 Revision history for DBIx::Class
 
+    * Fixes
+        - Fix a Storage/$dbh leak introduced by th migration to
+          Try::Tiny (this is *not* a Try::Tiny bug)
+
 0.08122 2010-05-03 17:41 (UTC)
     * New Features
         - Add DBIx::Class::FilterColumn for non-ref filtering
